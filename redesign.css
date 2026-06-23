@@ -1,0 +1,215 @@
+/* ================================================================
+   PostureLab — Elegant LP（studio clori / ambihone 参考）
+   生成りクリーム × 明朝 × かすみ草ボタニカル × 細い菱形ディバイダ
+   上品・繊細・余白たっぷり。動的部は style.css(:root) を継承。
+   ================================================================ */
+:root{
+  --lx-cream:#FBF7F1;
+  --lx-cream-2:#F4EEE2;
+  --lx-paper:#FFFFFF;
+  --lx-blush:#E6C3B8;
+  --lx-blush-soft:#F8EFE8;
+  --lx-rose:#C98A7C;        /* dusty rose アクセント */
+  --lx-rose-deep:#B06E60;
+  --lx-terra:#BC6B53;       /* CTA（落ち着いたテラコッタ）*/
+  --lx-sage:#8FA083;
+  --lx-sage-deep:#69785E;
+  --lx-ink:#473F36;
+  --lx-ink-2:#6E6457;
+  --lx-muted:#9E927E;
+  --lx-line:#E7DCCA;
+  --lx-gold:#B89A6A;
+  --lx-serif:'Shippori Mincho','Noto Serif JP',serif;
+  --lx-display:'Cormorant Garamond',serif;
+  --lx-sans:'Noto Sans JP',system-ui,sans-serif;
+  --lx-en:'Inter',system-ui,sans-serif;
+  /* 細い菱形ディバイダ */
+  --lx-divider:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='12' viewBox='0 0 130 12'%3E%3Cline x1='6' y1='6' x2='56' y2='6' stroke='%23CBB39B' stroke-width='1'/%3E%3Cline x1='74' y1='6' x2='124' y2='6' stroke='%23CBB39B' stroke-width='1'/%3E%3Cpath d='M65 1.5 L69 6 L65 10.5 L61 6 Z' fill='%23C98A7C'/%3E%3C/svg%3E");
+  /* かすみ草（白い小花）コーナー装飾 */
+  --lx-babys:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='none' stroke='%23CBD4BD' stroke-width='1'%3E%3Cpath d='M20,158C58,124,92,96,158,28'/%3E%3Cpath d='M20,158C48,130,70,110,98,70'/%3E%3Cpath d='M44,160C74,130,104,108,136,58'/%3E%3C/g%3E%3Cg fill='%23FFFFFF' stroke='%23E8E1D2' stroke-width='.6'%3E%3Ccircle cx='158' cy='28' r='5.2'/%3E%3Ccircle cx='150' cy='40' r='4'/%3E%3Ccircle cx='167' cy='38' r='3.4'/%3E%3Ccircle cx='136' cy='58' r='5'/%3E%3Ccircle cx='127' cy='68' r='3.6'/%3E%3Ccircle cx='145' cy='66' r='3'/%3E%3Ccircle cx='98' cy='70' r='4.6'/%3E%3Ccircle cx='104' cy='82' r='3'/%3E%3Ccircle cx='70' cy='110' r='4'/%3E%3Ccircle cx='61' cy='118' r='3'/%3E%3Ccircle cx='46' cy='146' r='3.6'/%3E%3C/g%3E%3Cg fill='%23EBD9B8'%3E%3Ccircle cx='158' cy='28' r='1.4'/%3E%3Ccircle cx='136' cy='58' r='1.4'/%3E%3Ccircle cx='98' cy='70' r='1.3'/%3E%3Ccircle cx='70' cy='110' r='1.2'/%3E%3Ccircle cx='46' cy='146' r='1.1'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+body.lx{
+  background:var(--lx-cream) !important;
+  color:var(--lx-ink);
+  font-family:var(--lx-serif);
+  line-height:2;
+  letter-spacing:.03em;
+  -webkit-font-smoothing:antialiased;
+}
+body.lx .petal-bg{ display:none !important; }
+
+/* ---------- ボタン（上品な丸み） ---------- */
+.lx-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  padding:16px 42px; border-radius:999px; cursor:pointer;
+  font-family:var(--lx-sans); font-weight:600; font-size:15px; letter-spacing:.08em;
+  border:none; transition:.25s ease; text-decoration:none;
+}
+.lx-btn-gold{ background:var(--lx-terra); color:#fff; box-shadow:0 12px 26px rgba(188,107,83,.24); }
+.lx-btn-gold:hover{ background:var(--lx-rose-deep); transform:translateY(-2px); }
+.lx-btn-green{ background:var(--lx-sage-deep); color:#fff; box-shadow:0 12px 26px rgba(105,120,94,.22); }
+.lx-btn-green:hover:not(:disabled){ background:#586448; transform:translateY(-2px); }
+.lx-btn-green:disabled{ opacity:.4; cursor:not-allowed; box-shadow:none; }
+.lx-btn-ghost{ background:#fff; color:var(--lx-rose-deep); border:1px solid var(--lx-rose); box-shadow:none; }
+.lx-btn-ghost:hover{ background:var(--lx-blush-soft); }
+.lx-btn .btn-arrow{ stroke:currentColor; }
+
+/* ---------- 上部バー ---------- */
+.lx-topbar{
+  background:var(--lx-cream-2); color:var(--lx-sage-deep);
+  font-family:var(--lx-en); font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+  text-align:center; padding:9px 16px; border-bottom:1px solid var(--lx-line);
+}
+
+/* ---------- ヘッダー ---------- */
+.lx-header{
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 56px;
+  background:rgba(251,247,241,.9); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--lx-line);
+}
+.lx-logo{ display:flex; align-items:center; gap:13px; text-decoration:none; }
+.lx-logo-mark{
+  width:42px; height:42px; border-radius:50%;
+  display:grid; place-items:center;
+  background:var(--lx-cream-2); color:var(--lx-rose); border:1px solid var(--lx-line);
+  font-family:var(--lx-display); font-size:24px; font-weight:600;
+}
+.lx-logo-text{ font-family:var(--lx-serif); font-weight:600; font-size:20px; color:var(--lx-ink); letter-spacing:.06em; }
+.lx-logo-text em{ font-family:var(--lx-display); font-style:italic; font-weight:500; color:var(--lx-rose); margin-left:7px; }
+.lx-nav{ display:flex; align-items:center; gap:28px; }
+.lx-nav a{ color:var(--lx-ink-2); text-decoration:none; font-family:var(--lx-sans); font-size:14px; letter-spacing:.05em; }
+.lx-nav a:hover{ color:var(--lx-rose); }
+.lx-nav-btn{
+  background:transparent; border:1px solid var(--lx-rose); color:var(--lx-rose-deep);
+  padding:9px 22px; border-radius:999px; cursor:pointer; font-family:var(--lx-sans); font-size:13px; letter-spacing:.06em;
+}
+.lx-nav-btn:hover{ background:var(--lx-rose); color:#fff; }
+
+/* ---------- ヒーロー（明るいスプリット＋かすみ草） ---------- */
+.lx-hero{
+  position:relative; overflow:hidden;
+  background:radial-gradient(70% 60% at 88% 6%, var(--lx-blush-soft), transparent 62%), var(--lx-cream);
+  display:grid; grid-template-columns:1.04fr .96fr; gap:56px; align-items:center;
+  padding:72px 56px 86px;
+}
+.lx-hero::before{   /* 左上のかすみ草 */
+  content:''; position:absolute; top:6px; left:8px; width:180px; height:180px;
+  background:no-repeat var(--lx-babys); transform:scaleX(-1); opacity:.7; pointer-events:none;
+}
+.lx-hero::after{    /* 右下のかすみ草 */
+  content:''; position:absolute; bottom:0; right:6px; width:180px; height:180px;
+  background:no-repeat var(--lx-babys); opacity:.6; pointer-events:none;
+}
+.lx-hero-inner{ order:1; position:relative; z-index:2; }
+.lx-hero-bg{
+  order:2; position:relative; inset:auto; align-self:center; justify-self:center;
+  width:100%; max-width:420px; aspect-ratio:4/5; pointer-events:none; z-index:1;
+  background:url('assets/hero-bride.png') center top/cover no-repeat;
+  border-radius:50%;
+  box-shadow:0 30px 62px rgba(71,63,54,.16);
+}
+.lx-hero-bg::after{ content:''; position:absolute; inset:9px; border:1px solid rgba(255,255,255,.7); border-radius:50%; pointer-events:none; }
+.lx-hero-eyebrow{ font-family:var(--lx-display); font-style:italic; font-size:25px; color:var(--lx-rose); margin:0 0 16px; letter-spacing:.02em; }
+.lx-hero-title{
+  font-family:var(--lx-serif); font-weight:700;
+  font-size:clamp(32px,4.4vw,54px); line-height:1.5; letter-spacing:.05em;
+  color:var(--lx-ink); margin:0 0 26px;
+}
+.lx-hero-title i{ font-family:var(--lx-serif); font-style:normal; color:var(--lx-rose); }
+.lx-hero-lead{ font-family:var(--lx-sans); font-size:15px; line-height:2; color:var(--lx-ink-2); max-width:510px; margin:0 0 34px; }
+
+/* ---------- ABOUT（細枠フレーム） ---------- */
+.lx-about{
+  max-width:1060px; margin:0 auto; padding:84px 56px 70px;
+  display:grid; grid-template-columns:repeat(3,1fr); gap:34px;
+}
+.lx-about-item{
+  background:var(--lx-paper); border:1px solid var(--lx-line);
+  border-radius:6px; padding:38px 28px 32px; text-align:center; position:relative;
+  box-shadow:0 10px 30px rgba(71,63,54,.05);
+}
+.lx-about-item::before{   /* 内側の細罫（フレーム感） */
+  content:''; position:absolute; inset:9px; border:1px solid var(--lx-line); border-radius:3px; pointer-events:none;
+}
+.lx-about-no{ font-family:var(--lx-display); font-size:30px; color:var(--lx-rose); position:relative; }
+.lx-about-item h3{ font-family:var(--lx-serif); font-weight:700; font-size:20px; color:var(--lx-ink); margin:6px 0 12px; letter-spacing:.04em; position:relative; }
+.lx-about-item p{ font-family:var(--lx-sans); font-size:13.5px; color:var(--lx-ink-2); margin:0; position:relative; }
+
+/* ---------- セクション見出し（菱形ディバイダ） ---------- */
+.lx-sec-head{ max-width:760px; margin:0 auto 44px; text-align:center; }
+.lx-sec-no{
+  font-family:var(--lx-en); font-size:12px; letter-spacing:.26em; text-transform:uppercase;
+  color:var(--lx-rose); display:inline-block; margin-bottom:14px;
+}
+.lx-sec-title{ font-family:var(--lx-serif); font-weight:700; font-size:clamp(25px,3.6vw,37px); color:var(--lx-ink); margin:0 0 8px; letter-spacing:.06em; }
+.lx-sec-title::after{ content:''; display:block; width:130px; height:12px; margin:18px auto 0; background:center/contain no-repeat var(--lx-divider); }
+.lx-sec-sub{ font-family:var(--lx-sans); font-size:14px; color:var(--lx-muted); margin:0; }
+
+/* ---------- START / UPLOAD ---------- */
+.lx-start{ max-width:960px; margin:0 auto; padding:80px 56px; }
+.lx-upload-panel{
+  position:relative; overflow:hidden;
+  background:var(--lx-paper); border:1px solid var(--lx-line);
+  border-radius:10px; padding:48px; box-shadow:0 18px 46px rgba(71,63,54,.07);
+}
+.lx-upload-panel::after{   /* 内側フレーム罫 */
+  content:''; position:absolute; inset:12px; border:1px solid var(--lx-line); border-radius:5px; pointer-events:none;
+}
+.lx-upload-panel::before{   /* 右上かすみ草 */
+  content:''; position:absolute; top:-6px; right:-6px; width:150px; height:150px;
+  background:no-repeat var(--lx-babys); background-size:contain; opacity:.5; pointer-events:none;
+}
+.lx-upload-panel > *{ position:relative; z-index:1; }
+.lx-tips{ display:flex; flex-wrap:wrap; gap:10px 26px; justify-content:center; margin:30px 0 6px; font-family:var(--lx-sans); font-size:12.5px; color:var(--lx-muted); }
+.lx-actions{ display:flex; align-items:center; gap:18px; justify-content:center; margin-top:30px; }
+.lx-disclaimer{ text-align:center; font-family:var(--lx-sans); font-size:11.5px; color:var(--lx-muted); margin:22px 0 0; line-height:1.7; }
+.lx-disclaimer strong{ color:var(--lx-rose); }
+
+/* ---------- RESULT セクション ---------- */
+main#results{ max-width:1060px; margin:0 auto; padding:30px 56px 80px; }
+.lx-section{
+  position:relative; background:var(--lx-paper); border:1px solid var(--lx-line);
+  border-radius:10px; padding:54px 46px; margin-bottom:30px; box-shadow:0 14px 38px rgba(71,63,54,.06);
+}
+
+/* ---------- フッター ---------- */
+.lx-footer{
+  background:var(--lx-cream-2); color:var(--lx-ink-2);
+  text-align:center; padding:62px 24px 46px; margin-top:38px; border-top:1px solid var(--lx-line);
+}
+.lx-foot-brand{ font-family:var(--lx-serif); font-weight:600; font-size:24px; color:var(--lx-ink); letter-spacing:.06em; }
+.lx-foot-brand em{ font-family:var(--lx-display); font-style:italic; color:var(--lx-rose); margin-left:7px; }
+.lx-foot-links{ display:flex; gap:24px; justify-content:center; margin:22px 0; font-family:var(--lx-sans); font-size:12.5px; }
+.lx-foot-links span{ cursor:pointer; }
+.lx-foot-links span:hover{ color:var(--lx-rose); }
+.lx-foot-disc{ max-width:680px; margin:0 auto 18px; font-family:var(--lx-sans); font-size:11.5px; color:var(--lx-muted); line-height:1.8; }
+.lx-foot-copy{ font-family:var(--lx-en); font-size:11px; letter-spacing:.16em; color:var(--lx-muted); }
+
+/* ---------- 既存ウィジェットを上品に ---------- */
+body.lx .upload-drop{ border:1.5px dashed var(--lx-rose); background:linear-gradient(180deg,#fff,var(--lx-blush-soft)); border-radius:8px; }
+body.lx .upload-drop:hover{ border-color:var(--lx-sage); background:#F3EFE7; }
+body.lx .upload-icon-circle{ background:var(--lx-terra); }
+body.lx .drop-required{ background:var(--lx-sage-deep); color:#fff; }
+body.lx .drop-title{ font-family:var(--lx-serif); }
+body.lx .chip input:checked + span{ background:var(--lx-rose); color:#fff; border-color:var(--lx-rose); }
+body.lx .phase-tab.active{ background:var(--lx-sage-deep) !important; color:#fff !important; border-color:var(--lx-sage-deep) !important; }
+
+/* ---------- レスポンシブ ---------- */
+@media (max-width:880px){
+  .lx-header{ padding:14px 20px; }
+  .lx-nav{ gap:14px; }
+  .lx-nav a{ display:none; }
+  .lx-hero{ grid-template-columns:1fr; gap:34px; padding:56px 22px 64px; text-align:center; }
+  .lx-hero-inner{ order:2; }
+  .lx-hero-bg{ order:1; max-width:288px; }
+  .lx-hero-lead{ margin-left:auto; margin-right:auto; }
+  .lx-hero::before, .lx-hero::after{ width:110px; height:110px; }
+  .lx-about{ grid-template-columns:1fr; gap:20px; padding:56px 22px; }
+  .lx-start{ padding:56px 20px; }
+  .lx-upload-panel{ padding:30px 18px; }
+  main#results{ padding:20px 18px 60px; }
+  .lx-section{ padding:36px 18px; }
+}

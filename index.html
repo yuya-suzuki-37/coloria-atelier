@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Coloria Atelier｜AIパーソナルカラー診断（16タイプ）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Shippori+Mincho:wght@400;500;600;700;800&family=Noto+Serif+JP:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=8" />
+<link rel="stylesheet" href="redesign.css?v=6" />
+<link rel="stylesheet" href="pc.css?v=7" />
+</head>
+<body class="lx">
+
+<div class="lx-topbar">AI PERSONAL COLOR ATELIER — あなたに似合う色を、科学する。</div>
+
+<header class="lx-header">
+  <a class="lx-logo" href="#top">
+    <span class="lx-logo-mark">C</span>
+    <span class="lx-logo-text">Coloria<em>Atelier</em></span>
+  </a>
+  <nav class="lx-nav">
+    <a href="#about">特徴</a>
+    <a href="#start" class="js-reveal">診断する</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="lx-hero" id="top">
+  <div class="lx-hero-bg" aria-hidden="true"></div>
+  <div class="lx-hero-inner">
+    <p class="lx-hero-eyebrow">Your color, your beauty</p>
+    <h1 class="lx-hero-title">似合う色は、<br><i>あなたを更新する。</i></h1>
+    <p class="lx-hero-lead">
+      顔写真と数問の質問から、AIが肌・髪・瞳の色を読み解き、<br>
+      あなたの<strong>16タイプ パーソナルカラー</strong>を診断します。
+    </p>
+    <a href="#start" class="lx-btn lx-btn-gold js-reveal">無料で診断する</a>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="lx-about" id="about">
+  <div class="lx-about-item"><span class="lx-about-no">01</span><h3>AIが色を抽出</h3><p>顔写真から肌・髪・瞳の色をAIが解析。明度・コントラストを客観的に読み取ります。</p></div>
+  <div class="lx-about-item"><span class="lx-about-no">02</span><h3>16タイプで判定</h3><p>春夏秋冬をさらに細分化した16タイプで、写真＋問診のハイブリッド判定。</p></div>
+  <div class="lx-about-item"><span class="lx-about-no">03</span><h3>似合う色を提案</h3><p>ベストカラー・コスメ・髪色・アクセサリーまで、あなた専用に提案します。</p></div>
+</section>
+
+<!-- STEP 01: UPLOAD -->
+<section class="lx-start" id="start" hidden>
+  <div class="lx-sec-head">
+    <span class="lx-sec-no">STEP 01</span>
+    <h2 class="lx-sec-title">写真をアップロード</h2>
+    <p class="lx-sec-sub">明るい自然光・正面・ノーメイク〜薄めがおすすめ。写真は端末内で処理され外部送信されません。</p>
+  </div>
+  <div class="lx-upload-panel">
+    <div id="pc-upload">
+      <input type="file" id="pc-file" accept="image/*,.heic,.heif" hidden>
+      <label for="pc-file" class="pc-upload-btn">📷 顔写真を選ぶ</label>
+      <p class="pc-paste-hint">または <b>⌘V で貼り付け</b> ／ ここに画像を <b>ドラッグ&ドロップ</b></p>
+      <div class="preview" id="pc-preview" hidden>
+        <canvas id="pc-canvas"></canvas>
+        <p class="pc-tap-hint">↑ 画像内の<b>白い部分</b>をタップするとホワイトバランス補正（精度UP）</p>
+      </div>
+      <p id="pc-status" class="pc-status">明るい自然光・正面・ノーメイク〜薄めがおすすめです。</p>
+      <div id="pc-extracted" class="pc-extracted" hidden>
+        <h4>抽出した色の特徴</h4>
+        <div id="pc-extracted-body" class="pc-ext-grid"></div>
+      </div>
+      <div id="pc-warn" class="pc-warn" hidden></div>
+      <div id="pc-after-upload" class="lx-actions" hidden>
+        <button class="lx-btn lx-btn-green" id="pc-analyze">色を解析する</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 02: QUESTIONS -->
+<section class="lx-section" id="pc-questions" hidden>
+  <div class="lx-sec-head">
+    <span class="lx-sec-no">STEP 02</span>
+    <h2 class="lx-sec-title">いくつかの質問</h2>
+    <p class="lx-sec-sub">写真で読み取りにくい「色み・くすみ」を補正します（できるだけ多くお答えください）。</p>
+  </div>
+  <div class="pc-progress"><div id="pc-progress-bar"></div></div>
+  <div id="pc-progress-text" class="pc-progress-text">0 / 11 問</div>
+  <div id="pc-questions-list"></div>
+  <div class="lx-actions"><button class="lx-btn lx-btn-green" id="pc-diagnose">診断する</button></div>
+</section>
+
+<!-- RESULT -->
+<section class="lx-section" id="pc-result" hidden>
+  <div class="lx-sec-head">
+    <span class="lx-sec-no">RESULT</span>
+    <h2 class="lx-sec-title">あなたのパーソナルカラー</h2>
+  </div>
+  <div id="pc-result-body"></div>
+</section>
+
+<!-- FOOTER -->
+<footer class="lx-footer">
+  <div class="lx-foot-brand">Coloria<em>Atelier</em></div>
+  <div class="lx-foot-links"><span>プライバシーポリシー</span><span>利用規約</span><span>免責事項</span></div>
+  <p class="lx-foot-disc">本ツールは写真と問診による簡易的なパーソナルカラーの目安を提供するもので、プロのドレープ診断や各社の体系・資格とは独立しています。照明・画面環境で色は変わります。</p>
+  <div class="lx-foot-copy">© 2026 Coloria Atelier</div>
+</footer>
+
+<div id="pc-loading" class="pc-loading" hidden><div class="pc-spin"></div><span id="pc-loading-text">処理中…</span></div>
+
+<script type="module" src="app.js?v=17"></script>
+</body>
+</html>
