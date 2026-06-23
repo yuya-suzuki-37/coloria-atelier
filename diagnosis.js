@@ -14,7 +14,10 @@ import { TYPES, SEASONS } from './data.js';
 const SEASON_KEYS=['spring','summer','autumn','winter'];
 const clamp=(v,lo=-1,hi=1)=>Math.max(lo,Math.min(hi,v));
 
-export function diagnose(photo, answers, wbSet=false){
+export function diagnose(photo, answers, wbMode=false){
+  // WBモード: 'manual'(白タップ・最信頼) / 'auto'(白目自動・中信頼) / false(未補正)
+  const wbSet=!!wbMode, wbManual=wbMode==='manual', wbAuto=wbMode==='auto';
+
   // ---------- 1) 問診 → 軸平均(各 -1..+1) ＋ シーズン投票 ----------
   const qSum={hue:0,v:0,c:0,k:0}, qCnt={hue:0,v:0,c:0,k:0};
   const qSeason={spring:0,summer:0,autumn:0,winter:0};
@@ -44,8 +47,8 @@ export function diagnose(photo, answers, wbSet=false){
   const wPhoto={
     v:  has ? 0.68 : 0,                 // 明度: 写真主導(ITAは信頼できる)
     k:  conReliable ? 0.60 : 0,         // コントラスト: 取得できた時のみ写真主導
-    hue:has ? (wbSet ? 0.45 : 0.15) : 0,// 暖寒: WBあり中/なし弱
-    c:  has ? (wbSet ? 0.48 : 0.20) : 0,// 清濁: WBありで中, なしで弱
+    hue:has ? (wbManual?0.45 : wbAuto?0.33 : 0.15) : 0, // 暖寒: 手動>自動>未補正
+    c:  has ? (wbManual?0.48 : wbAuto?0.36 : 0.20) : 0, // 清濁: 手動>自動>未補正
   };
   const blend=(p,q,w)=> clamp(w*p + (1-w)*q);
   const AX={
@@ -93,7 +96,7 @@ export function diagnose(photo, answers, wbSet=false){
   if(has){
     reasons.push(`明度（明るさ）：${dir(AX.v,'明るめ','暗め','中間')}（写真主体）`);
     reasons.push(`コントラスト（肌・髪・瞳の差）：${dir(AX.k,'高め','低め','中間')}（${conReliable?'写真主体':'髪/瞳が取りにくく問診主体'}）`);
-    reasons.push(`アンダートーン（暖寒）：${AX.hue>=0?'黄み寄り(イエベ傾向)':'青み寄り(ブルベ傾向)'}（${wbSet?'白タップ補正あり':'白タップ未設定のため問診主体・参考値'}）`);
+    reasons.push(`アンダートーン（暖寒）：${AX.hue>=0?'黄み寄り(イエベ傾向)':'青み寄り(ブルベ傾向)'}（${wbManual?'白タップ補正あり' : wbAuto?'自動WB(白目基準・参考)' : '白タップ未設定のため問診主体・参考値'}）`);
     reasons.push(`清濁（クリア/くすみ）：${dir(AX.c,'クリア寄り','くすみ寄り','中間')}（${wbSet?'写真+問診':'問診主体'}）`);
   } else {
     reasons.push('写真なし・問診のみで判定しています（写真があると明度・コントラストの精度が上がります）');
@@ -105,7 +108,9 @@ export function diagnose(photo, answers, wbSet=false){
   if(topMargin>=0.10){ conf++; } else { cReasons.push('1位と2位のタイプが僅差'); }
   if(has && photoSeasonGuess===topSeason){ conf++; }
   else if(has){ conf--; cReasons.push('写真と問診でシーズン傾向にズレ'); }
-  if(wbSet){ conf++; } else { cReasons.push('ホワイトバランス未補正（暖寒は問診主体）'); }
+  if(wbManual){ conf++; }
+  else if(wbAuto){ conf++; cReasons.push('ホワイトバランスは自動推定（白目基準・参考値）'); }
+  else { cReasons.push('ホワイトバランス未補正（暖寒は問診主体）'); }
   if(!has){ conf--; cReasons.push('写真なし'); }
   if(has && photo.lrDiff>10){ conf--; cReasons.push('顔の左右で明るさ差が大きい(照明ムラ)'); }
   if(has && photo.quality && photo.quality.warnings.length){ conf--; cReasons.push(...photo.quality.warnings); }

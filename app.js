@@ -4,8 +4,8 @@
 // v2: ローディング/進捗/撮影品質警告/判定根拠/印刷/安全フォールバック
 // ===================================================================
 import { QUESTIONS, SEASONS, WEDDING_BY_SEASON, TYPE_EXTRA } from './data.js';
-import { extractFeatures, computeWB, rgbToLab } from './analyzer.js?v=3';
-import { diagnose } from './diagnosis.js?v=2';
+import { extractFeatures, computeWB, rgbToLab, autoWhiteBalance } from './analyzer.js?v=4';
+import { diagnose } from './diagnosis.js?v=3';
 
 const $=s=>document.querySelector(s);
 const FACE_MODEL='https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
@@ -44,7 +44,7 @@ function loadImageBlob(blob){
     ctx.drawImage(img,0,0,W,H);
     state.canvas=cv; state.ctx=ctx; state.W=W; state.H=H;
     state.imageData=ctx.getImageData(0,0,W,H).data;
-    state.loaded=true; state.wb={r:1,g:1,b:1}; state.wbSet=false;
+    state.loaded=true; state.wb={r:1,g:1,b:1}; state.wbSet=false; state.landmarks=null; state.features=null;
     URL.revokeObjectURL(state.objURL); state.objURL=null;
     $('#pc-preview').hidden=false; $('#pc-after-upload').hidden=false; $('#pc-warn').hidden=true;
     setStatus('写真を読み込みました。画像内の「白い部分」(白い服・歯・白目・白い紙)をタップすると精度が上がります（任意）。');
@@ -111,11 +111,13 @@ $('#pc-canvas').addEventListener('click',ev=>{
   const x=Math.round((ev.clientX-rect.left)/rect.width*state.W);
   const y=Math.round((ev.clientY-rect.top)/rect.height*state.H);
   const o=(y*state.W+x)*4, d=state.imageData;
-  state.wb=computeWB(d[o],d[o+1],d[o+2]); state.wbSet=true;
+  state.wb=computeWB(d[o],d[o+1],d[o+2]); state.wbSet='manual';
   state.ctx.putImageData(new ImageData(new Uint8ClampedArray(state.imageData),state.W,state.H),0,0);
   state.ctx.strokeStyle='#C25E4B'; state.ctx.lineWidth=2;
   state.ctx.beginPath(); state.ctx.arc(x,y,8,0,Math.PI*2); state.ctx.stroke();
-  setStatus('✓ ホワイトバランスを補正しました。「色を解析する」へ進んでください。');
+  // 手動タップ後に再解析済みなら特徴量を更新（タップ→解析の順序前後どちらでも反映）
+  if(state.landmarks){ state.features=extractFeatures(state.landmarks, state.imageData, state.W, state.H, state.wb); showExtracted(state.features); showWarnings(state.features); }
+  setStatus('✓ 手動でホワイトバランスを補正しました（最も正確）。「色を解析する」へ進んでください。');
 });
 
 // ---- MediaPipe Face 遅延ロード ----
@@ -139,8 +141,16 @@ $('#pc-analyze').addEventListener('click',async()=>{
     const lms=res.faceLandmarks&&res.faceLandmarks[0];
     if(!lms){ hideLoading(); setStatus('⚠️ 顔を検出できませんでした。明るく正面・顔が大きく写った別の写真でお試しください。'); return; }
     state.landmarks=lms;
+    // 自動ホワイトバランス（手動タップが無い時だけ・ガード付き）
+    let wbMsg='';
+    if(state.wbSet!=='manual'){
+      const awb=autoWhiteBalance(lms, state.imageData, state.W, state.H);
+      if(awb.ok){ state.wb=awb.wb; state.wbSet='auto'; wbMsg='✓ 白目から自動でホワイトバランスを補正しました（精度UP）。さらに正確にするには画像内の白い部分をタップしてください。'; }
+      else { state.wbSet=false; wbMsg='ℹ️ 自動ホワイトバランスは見送りました（'+awb.reason+'）。画像内の白い部分をタップすると暖寒の精度が上がります。'; }
+    }
     state.features=extractFeatures(lms, state.imageData, state.W, state.H, state.wb);
     hideLoading();
+    if(wbMsg) setStatus(wbMsg);
     showExtracted(state.features);
     showWarnings(state.features);
     buildQuestions();
@@ -155,10 +165,13 @@ $('#pc-analyze').addEventListener('click',async()=>{
 function showExtracted(f){
   if(!f){ return; }
   const sw=(rgb)=>`rgb(${Math.round(rgb.r)},${Math.round(rgb.g)},${Math.round(rgb.b)})`;
+  const wbLab = state.wbSet==='manual' ? ' <small>(手動WB・最も正確)</small>'
+              : state.wbSet==='auto'   ? ' <small>(自動WB/白目基準)</small>'
+              : ' <small>(WB未補正/参考)</small>';
   $('#pc-extracted').hidden=false;
   $('#pc-extracted-body').innerHTML=`
     <div class="pc-ext-item"><span class="pc-ext-sw" style="background:${sw(f.skinRGB)}"></span>抽出した肌の色</div>
-    <div class="pc-ext-item">アンダートーン: <b>${f.hueSignal>=0?'黄み寄り':'青み寄り'}</b>${state.wbSet?'':' <small>(WB未補正/参考)</small>'}</div>
+    <div class="pc-ext-item">アンダートーン: <b>${f.hueSignal>=0?'黄み寄り':'青み寄り'}</b>${wbLab}</div>
     <div class="pc-ext-item">明度: <b>${f.valueSignal>=0.3?'明るい':f.valueSignal<=-0.3?'暗め':'中間'}</b></div>
     <div class="pc-ext-item">コントラスト: <b>${f.contrastSignal>=0.3?'高め':f.contrastSignal<=-0.3?'低め':'中間'}</b></div>`;
 }
@@ -365,7 +378,7 @@ function initDrape(t){
 }
 
 function restart(){
-  state.features=null; state.loaded=false; state.wbSet=false; state.wb={r:1,g:1,b:1};
+  state.features=null; state.loaded=false; state.wbSet=false; state.wb={r:1,g:1,b:1}; state.landmarks=null;
   $('#pc-file').value='';
   $('#pc-preview').hidden=true; $('#pc-extracted').hidden=true; $('#pc-after-upload').hidden=true; $('#pc-warn').hidden=true;
   $('#pc-questions').hidden=true; $('#pc-result').hidden=true;

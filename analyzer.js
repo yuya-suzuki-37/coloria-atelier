@@ -148,3 +148,41 @@ export function computeWB(r,g,b){
   const target=Math.max(r,g,b,1);
   return { r:target/Math.max(r,1), g:target/Math.max(g,1), b:target/Math.max(b,1) };
 }
+
+// ---------- 自動ホワイトバランス（白目=scleraから中性参照を推定）----------
+// 手動タップが無いユーザーの精度底上げ。明るく低彩度のサンプルだけ採用し、
+// 条件を満たさなければ ok:false を返して「適用しない」（誤WBで暖寒判定を壊さない）。
+// 過補正を避けるため部分補正(strength=0.7)。出典: white-patch仮説 + 白目は近中性。
+export function autoWhiteBalance(lms, data, W, H, strength=0.7){
+  const irisR=lms[468], irisL=lms[473];                 // 虹彩中心(左右)
+  const cR_out=lms[33], cR_in=lms[133];                 // 右目 外/内 目尻
+  const cL_in=lms[362], cL_out=lms[263];                // 左目 内/外 目尻
+  if(!irisR||!irisL||!cR_out||!cR_in||!cL_in||!cL_out) return {ok:false, reason:'目のランドマーク不足'};
+  const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
+  // 虹彩中心と目尻の中間（=白目の上）を4点サンプル
+  const pts=[ lerp(irisR,cR_out,0.55), lerp(irisR,cR_in,0.55), lerp(irisL,cL_out,0.55), lerp(irisL,cL_in,0.55) ];
+  const px=[];
+  for(const p of pts){
+    const cx=Math.round(p.x*W), cy=Math.round(p.y*H);
+    for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){
+      const x=cx+dx, y=cy+dy; if(x<0||y<0||x>=W||y>=H) continue;
+      const o=(y*W+x)*4; px.push({r:data[o],g:data[o+1],b:data[o+2]});
+    }
+  }
+  if(px.length<8) return {ok:false, reason:'白目サンプル不足'};
+  // 明るく低彩度の画素のみ白候補に（虹彩/まつ毛/充血/影を排除）
+  const cand=px.map(p=>{ const lb=rgbToLab(p.r,p.g,p.b); return {p, L:lb.L, C:Math.sqrt(lb.a*lb.a+lb.b*lb.b)}; })
+               .filter(c=>c.L>55 && c.C<28)
+               .sort((a,b)=>b.L-a.L);
+  if(cand.length<4) return {ok:false, reason:'白目が明るく取れない（眼鏡反射/暗い/閉じ目の可能性）'};
+  const top=cand.slice(0, Math.max(4, Math.round(cand.length*0.5)));
+  const med=k=>{ const s=top.map(c=>c.p[k]).sort((a,b)=>a-b); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
+  const ref={ r:med('r'), g:med('g'), b:med('b') };
+  const rl=rgbToLab(ref.r,ref.g,ref.b), refC=Math.sqrt(rl.a*rl.a+rl.b*rl.b);
+  if(rl.L<55) return {ok:false, reason:'白目参照が暗すぎる'};
+  if(refC>22) return {ok:false, reason:'白目参照の色が濃すぎる（充血/メイク/影の可能性）'};
+  // 部分補正で過補正を抑える
+  const raw=computeWB(ref.r,ref.g,ref.b);
+  const wb={ r:1+strength*(raw.r-1), g:1+strength*(raw.g-1), b:1+strength*(raw.b-1) };
+  return { ok:true, wb, ref, refL:rl.L, refC };
+}
