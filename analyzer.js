@@ -11,9 +11,12 @@ export const CALIB = {
   //   参考: >55 very light /41-55 light /28-41 intermediate /10-28 tan /<10 brown-dark
   ITA_LIGHT: 41,
   ITA_DEEP: 28,
-  // アンダートーン: CIELab b*(黄-青)が暖寒の主軸。絶対カットオフは未確立のため
-  //   一般的な肌b*中央(≈16)からの相対で見る（WB補正時のみ信頼／diagnosis側でWB未設定は減点）
-  SKIN_B_NEUTRAL: 16,
+  // アンダートーン: raw b* は明るさで動き「ほぼ全員黄み」に偏るため、
+  //   CIELab 色相角 h_ab = atan2(b*,a*) を使う(明度に頑健)。肌は概ね 35〜70°。
+  //   中央(≈52°)より大=黄み寄り(暖) / 小=赤み寄り(寒寄り)。WB補正時のみ信頼。
+  SKIN_HUE_CENTER: 52,
+  SKIN_HUE_SCALE: 16,
+  SKIN_B_NEUTRAL: 16,   // 旧・参考用に残置（現行ロジックは色相角を使用）
   // 彩度(清濁の補助・弱信号): 一般的な肌C*中央付近
   SKIN_C_MID: 18,
   // コントラスト(肌-髪/瞳のL*差・Weber的): 文献の確定カットオフなし→経験則として残置
@@ -127,13 +130,15 @@ export function extractFeatures(lms, data, W, H, wb={r:1,g:1,b:1}){
   if(!hairReliable && !eyeReliable) warnings.push('髪・瞳の色が取りにくい（コントラスト判定は弱め）');
 
   const cl=(v)=>Math.max(-1,Math.min(1,v));
+  // 暖寒=肌の色相角 h_ab=atan2(b*,a*)（raw b*の黄みバイアスを回避・明度に頑健）
+  const hueAngle = Math.atan2(skin.b, Math.max(skin.a, 0.1)) * 180/Math.PI;
   return {
-    skinRGB, skin, eye, hair, contrast, lrDiff: lr, box,
+    skinRGB, skin, eye, hair, contrast, lrDiff: lr, box, hueAngle,
     quality: { ok: warnings.length===0, warnings },
     // 明度=ITAバンド基準（light境界41°/deep境界28°を ±0.5 に対応させ連続化）
     valueSignal: cl((skin.ITA - (CALIB.ITA_LIGHT+CALIB.ITA_DEEP)/2) / ((CALIB.ITA_LIGHT-CALIB.ITA_DEEP))),
-    // 暖寒=b*（肌b*中央からの相対・WB補正時のみ信頼）
-    hueSignal:   cl((skin.b - CALIB.SKIN_B_NEUTRAL)/12),
+    // 暖寒=色相角の中央からの相対（WB補正時のみ信頼／diagnosis側でWB未設定は減点）
+    hueSignal:   cl((hueAngle - CALIB.SKIN_HUE_CENTER)/CALIB.SKIN_HUE_SCALE),
     chromaSignal:cl((skin.C - CALIB.SKIN_C_MID)/10),
     contrastSignal: contrast>0 ? cl((contrast - CALIB.CONTRAST_MID)/22) : 0,
   };

@@ -4,8 +4,8 @@
 // v2: ローディング/進捗/撮影品質警告/判定根拠/印刷/安全フォールバック
 // ===================================================================
 import { QUESTIONS, SEASONS, WEDDING_BY_SEASON, TYPE_EXTRA } from './data.js';
-import { extractFeatures, computeWB, rgbToLab } from './analyzer.js?v=2';
-import { diagnose } from './diagnosis.js';
+import { extractFeatures, computeWB, rgbToLab } from './analyzer.js?v=3';
+import { diagnose } from './diagnosis.js?v=2';
 
 const $=s=>document.querySelector(s);
 const FACE_MODEL='https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
