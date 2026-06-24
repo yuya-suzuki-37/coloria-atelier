@@ -265,10 +265,6 @@ function renderResult(r){
         </div>
       </div>
       <div class="pc-drape-chips" id="pc-drape-chips"></div>
-      <div class="pc-drape-gallery-wrap">
-        <p class="pc-drape-gallery-title">似合う6色を、あなたの顔で見比べる</p>
-        <div class="pc-drape-gallery" id="pc-drape-gallery"></div>
-      </div>
     </div>
 
     <div class="pc-wedding">
@@ -381,19 +377,6 @@ function initDrape(t){
   chips.innerHTML='';
   goods.forEach((o,i)=>{ const btn=document.createElement('button'); btn.className='pc-drape-chip'+(i===0?' on':''); btn.style.background=o.h; btn.title=o.h+' / 相性'+o.s; btn.addEventListener('click',()=>{ showGood(o); [...chips.children].forEach(c=>c.classList.remove('on')); btn.classList.add('on'); }); chips.appendChild(btn); });
   showGood(goods[0]);
-  // 似合う6色を自分の顔で一覧（“着た自分”を見せる）
-  const gal=$('#pc-drape-gallery');
-  if(gal){
-    gal.innerHTML='';
-    goods.forEach((o,i)=>{
-      const cell=document.createElement('div'); cell.className='pc-drape-cell'+(i===0?' top1':'');
-      const cnv=document.createElement('canvas'); cell.appendChild(cnv);
-      const lab=document.createElement('div'); lab.className='pc-drape-cell-label';
-      lab.innerHTML=`<span class="pc-drape-cell-sw" style="background:${o.h}"></span><b>相性 ${o.s}</b>${i===0?' <span class="pc-drape-cell-tag">★ベスト</span>':''}`;
-      cell.appendChild(lab); gal.appendChild(cell);
-      drawDrapeEl(cnv, o.h, 150);
-    });
-  }
 }
 
 function restart(){
