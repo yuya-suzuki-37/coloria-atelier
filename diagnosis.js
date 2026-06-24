@@ -9,7 +9,7 @@
 //  4) 根拠は軸ごと＋出所(写真/問診)を明示して正直に提示。
 // ※ しきい値は文献値ベースの近似。最終精度は実写真較正で詰める（calibration mode予定）。
 // ===================================================================
-import { TYPES, SEASONS } from './data.js';
+import { TYPES, SEASONS } from './data.js?v=2';
 
 const SEASON_KEYS=['spring','summer','autumn','winter'];
 const clamp=(v,lo=-1,hi=1)=>Math.max(lo,Math.min(hi,v));

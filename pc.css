@@ -91,6 +91,17 @@ body.lx .lx-hero-bg{
 .pc-drape-chip:hover{ transform:scale(1.1); }
 .pc-drape-chip.on{ outline:2px solid var(--lx-rose); outline-offset:2px; }
 .pc-drape-chip.bad::after{ content:'△'; position:absolute; top:-9px; right:-7px; font-size:10px; color:var(--lx-rose-deep); background:#fff; border-radius:50%; width:16px; height:16px; line-height:15px; box-shadow:0 1px 3px rgba(0,0,0,.15); }
+/* 似合う6色を自分の顔で見るギャラリー */
+.pc-drape-gallery-wrap{ margin-top:24px; border-top:1px solid var(--lx-line); padding-top:22px; }
+.pc-drape-gallery-title{ font-family:var(--lx-serif); font-size:16px; color:var(--lx-ink); margin:0 0 16px; letter-spacing:.03em; }
+.pc-drape-gallery{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.pc-drape-cell canvas{ width:100%; border-radius:10px; box-shadow:0 8px 20px rgba(71,63,54,.14); display:block; background:var(--lx-cream-2); }
+.pc-drape-cell-label{ font-family:var(--lx-sans); font-size:12px; color:var(--lx-muted); margin-top:7px; display:flex; align-items:center; justify-content:center; gap:6px; }
+.pc-drape-cell-label b{ color:var(--lx-ink); font-weight:700; }
+.pc-drape-cell-sw{ width:13px; height:13px; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,.2); display:inline-block; flex:none; }
+.pc-drape-cell.top1 canvas{ outline:2px solid var(--lx-rose); outline-offset:2px; }
+.pc-drape-cell.top1 .pc-drape-cell-tag{ color:var(--lx-rose-deep); font-weight:700; }
+@media(max-width:520px){ .pc-drape-gallery{ grid-template-columns:repeat(2,1fr); } }
 .pc-block{ margin:0 0 26px; }
 .pc-block h4{ font-family:var(--lx-serif); font-size:17px; color:var(--lx-ink); margin:0 0 12px; padding-left:12px; border-left:3px solid var(--lx-rose); }
 .pc-sw-grid{ display:flex; flex-wrap:wrap; gap:12px; }

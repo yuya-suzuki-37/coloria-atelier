@@ -3,9 +3,9 @@
 // 写真→(白タップWB)→Face色抽出→問診→16タイプ→結果
 // v2: ローディング/進捗/撮影品質警告/判定根拠/印刷/安全フォールバック
 // ===================================================================
-import { QUESTIONS, SEASONS, WEDDING_BY_SEASON, TYPE_EXTRA } from './data.js';
+import { QUESTIONS, SEASONS, WEDDING_BY_SEASON, TYPE_EXTRA, TYPE_WEDDING } from './data.js?v=2';
 import { extractFeatures, computeWB, rgbToLab, autoWhiteBalance } from './analyzer.js?v=4';
-import { diagnose } from './diagnosis.js?v=3';
+import { diagnose } from './diagnosis.js?v=4';
 
 const $=s=>document.querySelector(s);
 const FACE_MODEL='https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
@@ -223,7 +223,8 @@ $('#pc-diagnose').addEventListener('click',()=>{
 // ---- 結果描画 ----
 function renderResult(r){
   const t=r.first, s=SEASONS[t.season];
-  const wd=WEDDING_BY_SEASON[t.season];
+  // シーズン土台にタイプ別(6項目)を上書きマージ → 同シーズンでも内容が分かれる
+  const wd={...WEDDING_BY_SEASON[t.season], ...(TYPE_WEDDING[t.id]||{})};
   const ex=TYPE_EXTRA[t.id]||{wd:'',charm:''};
   const hasBooking = BOOKING_URL && BOOKING_URL!=='#';
   const ctaHtml = hasBooking ? '<div class="pc-cta"><span class="pc-cta-label">NEXT STEP</span><h4>この結果で、あなただけのウェディングを。</h4><p>診断カラーをもとに、プロが衣装・前撮り・ヘアメイクをご提案します。</p><a class="lx-btn lx-btn-gold" id="pc-book" href="'+BOOKING_URL+'" target="_blank" rel="noopener">無料で相談・前撮りを予約する</a></div>' : '';
@@ -264,6 +265,10 @@ function renderResult(r){
         </div>
       </div>
       <div class="pc-drape-chips" id="pc-drape-chips"></div>
+      <div class="pc-drape-gallery-wrap">
+        <p class="pc-drape-gallery-title">似合う6色を、あなたの顔で見比べる</p>
+        <div class="pc-drape-gallery" id="pc-drape-gallery"></div>
+      </div>
     </div>
 
     <div class="pc-wedding">
@@ -322,8 +327,9 @@ function renderResult(r){
 
 // ---- バーチャルドレープ（自分の顔に色を当てる） ----
 function shade(hex,amt){ const n=parseInt(hex.slice(1),16); let r=(n>>16)+amt,g=((n>>8)&255)+amt,b=(n&255)+amt; const c=v=>Math.max(0,Math.min(255,v)); return '#'+((1<<24)+(c(r)<<16)+(c(g)<<8)+c(b)).toString(16).slice(1); }
-function drawDrapeOn(sel, color){
-  const cv=$(sel); if(!cv||!state.imageData) return;
+function drawDrapeOn(sel, color, outW=320){ drawDrapeEl($(sel), color, outW); }
+function drawDrapeEl(cv, color, outW=320){
+  if(!cv||!state.imageData) return;
   const W=state.W,H=state.H, lm=state.landmarks;
   const chin = lm&&lm[152]? {x:lm[152].x*W, y:lm[152].y*H} : {x:W/2, y:H*0.6};
   const top = lm&&lm[10]? lm[10].y*H : H*0.2;
@@ -339,7 +345,7 @@ function drawDrapeOn(sel, color){
   const cropTop=Math.max(0, top-faceH*0.35);
   const cropBot=Math.min(H, chin.y+faceW*1.15);
   const cropW=Math.min(W, faceW*2.1), cropX=Math.max(0, chin.x-cropW/2), cropH=cropBot-cropTop;
-  const outW=320, outH=Math.max(40, Math.round(outW*cropH/cropW));
+  const outH=Math.max(40, Math.round(outW*cropH/cropW));
   cv.width=outW; cv.height=outH;
   cv.getContext('2d').drawImage(off, cropX,cropTop,cropW,cropH, 0,0,outW,outH);
 }
@@ -375,6 +381,19 @@ function initDrape(t){
   chips.innerHTML='';
   goods.forEach((o,i)=>{ const btn=document.createElement('button'); btn.className='pc-drape-chip'+(i===0?' on':''); btn.style.background=o.h; btn.title=o.h+' / 相性'+o.s; btn.addEventListener('click',()=>{ showGood(o); [...chips.children].forEach(c=>c.classList.remove('on')); btn.classList.add('on'); }); chips.appendChild(btn); });
   showGood(goods[0]);
+  // 似合う6色を自分の顔で一覧（“着た自分”を見せる）
+  const gal=$('#pc-drape-gallery');
+  if(gal){
+    gal.innerHTML='';
+    goods.forEach((o,i)=>{
+      const cell=document.createElement('div'); cell.className='pc-drape-cell'+(i===0?' top1':'');
+      const cnv=document.createElement('canvas'); cell.appendChild(cnv);
+      const lab=document.createElement('div'); lab.className='pc-drape-cell-label';
+      lab.innerHTML=`<span class="pc-drape-cell-sw" style="background:${o.h}"></span><b>相性 ${o.s}</b>${i===0?' <span class="pc-drape-cell-tag">★ベスト</span>':''}`;
+      cell.appendChild(lab); gal.appendChild(cell);
+      drawDrapeEl(cnv, o.h, 150);
+    });
+  }
 }
 
 function restart(){
