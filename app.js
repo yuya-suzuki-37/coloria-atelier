@@ -3,9 +3,9 @@
 // 写真→(白タップWB)→Face色抽出→問診→16タイプ→結果
 // v2: ローディング/進捗/撮影品質警告/判定根拠/印刷/安全フォールバック
 // ===================================================================
-import { QUESTIONS, SEASONS, WEDDING_BY_SEASON, TYPE_EXTRA, TYPE_WEDDING } from './data.js?v=2';
+import { QUESTIONS, SEASONS, WEDDING_BY_SEASON, TYPE_EXTRA, TYPE_WEDDING } from './data.js?v=3';
 import { extractFeatures, computeWB, rgbToLab, autoWhiteBalance } from './analyzer.js?v=4';
-import { diagnose } from './diagnosis.js?v=4';
+import { diagnose } from './diagnosis.js?v=5';
 
 const $=s=>document.querySelector(s);
 const FACE_MODEL='https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
