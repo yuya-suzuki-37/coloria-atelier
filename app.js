@@ -120,6 +120,9 @@ $('#pc-canvas').addEventListener('click',ev=>{
   setStatus('✓ 手動でホワイトバランスを補正しました（最も正確）。「色を解析する」へ進んでください。');
 });
 
+// 顔のバウンディングボックス面積（複数顔から最大を選ぶ用）
+function faceArea(lms){ let minx=1,miny=1,maxx=0,maxy=0; for(const p of lms){ if(p.x<minx)minx=p.x; if(p.x>maxx)maxx=p.x; if(p.y<miny)miny=p.y; if(p.y>maxy)maxy=p.y; } return (maxx-minx)*(maxy-miny); }
+
 // ---- MediaPipe Face 遅延ロード ----
 async function ensureFace(){
   if(faceLandmarker) return;
@@ -127,7 +130,7 @@ async function ensureFace(){
   const vision=await import(`${VISION}/vision_bundle.mjs`);
   const fileset=await vision.FilesetResolver.forVisionTasks(`${VISION}/wasm`);
   faceLandmarker=await vision.FaceLandmarker.createFromOptions(fileset,{
-    baseOptions:{ modelAssetPath:FACE_MODEL }, runningMode:'IMAGE', numFaces:1,
+    baseOptions:{ modelAssetPath:FACE_MODEL }, runningMode:'IMAGE', numFaces:3,
   });
 }
 
@@ -138,8 +141,11 @@ $('#pc-analyze').addEventListener('click',async()=>{
     await ensureFace();
     showLoading('顔と色を解析しています…');
     const res=faceLandmarker.detect(state.canvas);
-    const lms=res.faceLandmarks&&res.faceLandmarks[0];
-    if(!lms){ hideLoading(); setStatus('⚠️ 顔を検出できませんでした。明るく正面・顔が大きく写った別の写真でお試しください。'); return; }
+    const faces=(res.faceLandmarks)||[];
+    if(!faces.length){ hideLoading(); setStatus('⚠️ 顔を検出できませんでした。明るく正面・顔が大きく写った別の写真でお試しください。'); return; }
+    // 複数の顔があれば最も大きい顔を採用（別人で診断される事故を防止）
+    let lms=faces[0]; const multiFace=faces.length>1;
+    if(multiFace){ let best=-1; for(const f of faces){ const a=faceArea(f); if(a>best){ best=a; lms=f; } } }
     state.landmarks=lms;
     // 自動ホワイトバランス（手動タップが無い時だけ・ガード付き）
     let wbMsg='';
@@ -149,6 +155,7 @@ $('#pc-analyze').addEventListener('click',async()=>{
       else { state.wbSet=false; wbMsg='ℹ️ 自動ホワイトバランスは見送りました（'+awb.reason+'）。画像内の白い部分をタップすると暖寒の精度が上がります。'; }
     }
     state.features=extractFeatures(lms, state.imageData, state.W, state.H, state.wb);
+    if(multiFace && state.features){ state.features.quality.warnings.push('複数の顔を検出（最も大きい顔で診断しました）。1人で写った写真がおすすめです'); state.features.quality.ok=false; }
     hideLoading();
     if(wbMsg) setStatus(wbMsg);
     showExtracted(state.features);
